@@ -13,6 +13,12 @@ enum Role {
   APPLICANT
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id            String         @id @default(uuid()) @db.Uuid
   fullName      String         @map("full_name") @db.VarChar(120)
@@ -24,9 +30,35 @@ model User {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   refreshTokens RefreshToken[]
+  applicantRequests CreditRequest[] @relation("ApplicantRequests")
+  createdRequests CreditRequest[] @relation("CreatedRequests")
+  reviewedRequests CreditRequest[] @relation("ReviewedRequests")
 
   @@index([role, isActive])
   @@map("users")
+}
+
+model CreditRequest {
+  id              String        @id @default(uuid()) @db.Uuid
+  requestNumber   String        @unique @map("request_number") @db.VarChar(30)
+  applicantId     String        @map("applicant_id") @db.Uuid
+  createdById     String        @map("created_by") @db.Uuid
+  amount          Decimal       @db.Decimal(12, 2)
+  termMonths      Int           @map("term_months") @db.SmallInt
+  status          RequestStatus @default(PENDING)
+  decisionComment String?       @map("decision_comment") @db.VarChar(1000)
+  reviewedById    String?       @map("reviewed_by") @db.Uuid
+  reviewedAt      DateTime?     @map("reviewed_at")
+  version         Int           @default(1)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  applicant       User          @relation("ApplicantRequests", fields: [applicantId], references: [id], onDelete: Restrict)
+  createdBy       User          @relation("CreatedRequests", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewedBy      User?         @relation("ReviewedRequests", fields: [reviewedById], references: [id], onDelete: Restrict)
+
+  @@index([applicantId])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("credit_requests")
 }
 
 model RefreshToken {
