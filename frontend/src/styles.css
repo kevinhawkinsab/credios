@@ -23,6 +23,7 @@ body {
 
 body {
   margin: 0;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -30,4 +31,124 @@ body {
 button,
 input {
   font: inherit;
+}
+
+.credi-alert.swal2-popup {
+  width: min(32rem, calc(100vw - 2rem)) !important;
+  padding: 2.15rem 2.25rem 1.9rem !important;
+  border-radius: 1.55rem !important;
+  color: #14294c !important;
+  background: #fff !important;
+  box-shadow: 0 2rem 4rem rgba(13, 35, 64, 0.24) !important;
+}
+
+.credi-alert.swal2-popup .credi-alert__icon.swal2-icon {
+  width: 4.75rem !important;
+  height: 4.75rem !important;
+  margin: 0 auto 1.55rem !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.credi-alert-icon {
+  width: 4.25rem;
+  height: 4.25rem;
+  display: grid;
+  place-items: center;
+  border: 2px solid #ff9156;
+  border-radius: 50%;
+  color: #f47731;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.credi-alert__icon.swal2-icon .credi-alert-icon {
+  animation: crediplus-alert-pop 220ms ease-out;
+}
+
+.credi-alert-icon--reject {
+  border-color: #ff6472;
+  color: #cf4154;
+}
+
+.credi-alert__title.swal2-title {
+  margin: 0 !important;
+  color: #14294c !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.05em !important;
+}
+
+.credi-alert__message.swal2-html-container {
+  margin: 1.1rem 0 2.15rem !important;
+  color: #75849b !important;
+  font-size: 0.85rem !important;
+}
+
+.credi-alert__message strong {
+  color: #60718b;
+  font-weight: 800;
+}
+
+.credi-alert__actions.swal2-actions {
+  width: 100%;
+  display: flex !important;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.65rem;
+  margin: 0 !important;
+}
+
+.credi-alert__confirm,
+.credi-alert__cancel {
+  min-height: 3.25rem;
+  border-radius: 0.75rem !important;
+  font: inherit !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.credi-alert__confirm {
+  order: 2;
+  flex: 1 1 auto;
+  border: 0 !important;
+  color: #fff !important;
+  background: #159366 !important;
+  box-shadow: 0 0.7rem 1.3rem rgba(21, 147, 102, 0.19) !important;
+}
+
+.credi-alert__confirm--reject {
+  background: #cd4154 !important;
+  box-shadow: 0 0.7rem 1.3rem rgba(205, 65, 84, 0.18) !important;
+}
+
+.credi-alert__cancel {
+  order: 1;
+  flex: 0 0 auto;
+  min-width: 4.7rem;
+  border: 1px solid #d5dfeb !important;
+  color: #394b67 !important;
+  background: #f8fafd !important;
+}
+
+.credi-alert__close.swal2-close {
+  position: absolute !important;
+  top: 1.25rem !important;
+  right: 1.35rem !important;
+  color: #71819a !important;
+  font-size: 1.4rem !important;
+  font-weight: 400 !important;
+}
+
+@keyframes crediplus-alert-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

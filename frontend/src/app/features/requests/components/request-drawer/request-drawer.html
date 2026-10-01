@@ -1,0 +1,82 @@
+<div class="drawer-overlay" role="presentation" (click)="close()">
+  <aside class="request-drawer" role="dialog" aria-modal="true" [attr.aria-labelledby]="'drawer-title-' + mode()" (click)="$event.stopPropagation()">
+    @if (isFormMode()) {
+      <header class="drawer-header">
+        <div>
+          <p class="drawer-eyebrow">{{ eyebrow() }}</p>
+          <h2 [id]="'drawer-title-' + mode()">{{ title() }}</h2>
+        </div>
+        <button class="drawer-close" type="button" aria-label="Cerrar drawer" (click)="close()">×</button>
+      </header>
+
+      <form class="drawer-form" [formGroup]="requestForm" (ngSubmit)="submit()" novalidate>
+        <div class="drawer-field">
+          <label for="drawer-national-id">Cédula del solicitante <span>*</span></label>
+          <input id="drawer-national-id" type="text" formControlName="nationalId" placeholder="Ej. 8-123-456" autocomplete="off" />
+          @if (showRequestError('nationalId')) {
+            <small>Introduce una cédula válida.</small>
+          }
+        </div>
+
+        <div class="range-field">
+          <div class="range-field__heading">
+            <label for="drawer-amount">Monto solicitado</label>
+            <strong>{{ amountLabel() }}</strong>
+          </div>
+          <input id="drawer-amount" type="range" formControlName="amount" min="500" max="50000" step="500" />
+          <div class="range-field__limits"><span>$500</span><span>$50,000</span></div>
+        </div>
+
+        <div class="range-field">
+          <div class="range-field__heading">
+            <label for="drawer-term">Plazo</label>
+            <strong>{{ termLabel() }}</strong>
+          </div>
+          <input id="drawer-term" type="range" formControlName="term" min="6" max="60" step="6" />
+          <div class="range-field__limits"><span>6 meses</span><span>60 meses</span></div>
+        </div>
+
+        <div class="drawer-summary">
+          <div><span>Monto</span><strong>{{ amountLabel() }}</strong></div>
+          <div><span>Plazo</span><strong>{{ termLabel() }}</strong></div>
+        </div>
+
+        <button class="drawer-primary-button" type="submit">
+          <span>{{ mode() === 'create' ? 'Crear solicitud' : 'Guardar cambios' }}</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </form>
+    } @else {
+      <header class="drawer-header drawer-header--decision">
+        <div class="decision-icon" [class.decision-icon--reject]="isRejectMode()" aria-hidden="true">{{ isRejectMode() ? '!' : '✓' }}</div>
+        <button class="drawer-close" type="button" aria-label="Cerrar drawer" (click)="close()">×</button>
+      </header>
+
+      <div class="decision-content">
+        <p class="drawer-eyebrow">{{ eyebrow() }}</p>
+        <h2 [id]="'drawer-title-' + mode()">{{ title() }}</h2>
+        @if (request(); as selectedRequest) {
+          <p class="decision-copy">Confirma la decisión para <strong>{{ selectedRequest.id }}</strong> del solicitante <strong>{{ selectedRequest.nationalId }}</strong>.</p>
+          <div class="drawer-summary drawer-summary--decision">
+            <div><span>Monto solicitado</span><strong>{{ selectedRequest.amount }}</strong></div>
+            <div><span>Plazo</span><strong>{{ selectedRequest.term }}</strong></div>
+          </div>
+        }
+
+        <form [formGroup]="decisionForm" (ngSubmit)="submit()" novalidate>
+          <div class="comment-field">
+            <label for="decision-comment">Comentario <span>{{ isRejectMode() ? '*' : '(opcional)' }}</span></label>
+            <textarea id="decision-comment" formControlName="comment" [placeholder]="isRejectMode() ? 'Indica el motivo de la decisión...' : 'Añade una nota para el expediente (opcional)'"></textarea>
+            @if (showCommentError()) {
+              <small>El comentario es obligatorio para rechazar una solicitud.</small>
+            }
+          </div>
+          <div class="decision-buttons">
+            <button class="decision-cancel" type="button" (click)="close()">Cancelar</button>
+            <button class="decision-confirm" [class.decision-confirm--reject]="isRejectMode()" type="submit">{{ isRejectMode() ? 'Confirmar rechazo' : 'Confirmar aprobación' }}</button>
+          </div>
+        </form>
+      </div>
+    }
+  </aside>
+</div>

@@ -983,3 +983,83 @@
     gap: 0.35rem;
   }
 }
+
+.requests-shell {
+  grid-template-columns: 16.5rem minmax(0, 1fr);
+}
+
+.requests-sidebar {
+  padding: 1.6rem 1.15rem;
+}
+
+.requests-nav {
+  margin-top: 3rem;
+}
+
+.requests-nav__item {
+  min-height: 2.8rem;
+  font-size: 0.78rem;
+}
+
+.requests-header {
+  min-height: 5.5rem;
+  padding: 1rem clamp(1.25rem, 3vw, 3rem);
+}
+
+.requests-content {
+  padding: clamp(1.5rem, 3vw, 2.75rem) clamp(1.25rem, 3vw, 3rem);
+}
+
+.requests-hero {
+  min-height: 14rem;
+  padding: 2rem 2.4rem;
+}
+
+.requests-hero h1 {
+  font-size: clamp(2rem, 3.4vw, 3.25rem);
+}
+
+.requests-hero__copy > span {
+  margin-top: 0.8rem;
+  font-size: 0.72rem;
+}
+
+.requests-layout {
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+
+.request-toolbar {
+  min-height: 4.25rem;
+  padding: 0.7rem 1rem;
+}
+
+.request-table th {
+  height: 2.45rem;
+  padding: 0 1rem;
+  font-size: 0.58rem;
+}
+
+.request-table td {
+  height: 3.65rem;
+  padding: 0 1rem;
+  font-size: 0.68rem;
+}
+
+.request-detail-card {
+  padding: 1rem;
+}
+
+.detail-avatar-ring {
+  width: 5.8rem;
+  height: 5.8rem;
+}
+
+.detail-avatar-ring span {
+  width: 3rem;
+  height: 3rem;
+}
+
+.detail-profile h2 {
+  font-size: 1.05rem;
+}

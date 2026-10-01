@@ -97,7 +97,7 @@
                 <option value="Rechazada">Rechazadas</option>
               </select>
             </label>
-            <button class="new-request-button" type="button"><span>+</span> Nueva solicitud</button>
+            <button class="new-request-button" type="button" (click)="openDrawer('create')"><span>+</span> Nueva solicitud</button>
           </div>
 
           <div class="request-table-wrap">
@@ -162,10 +162,10 @@
               <div><dt>Teléfono</dt><dd>{{ request.phone }}</dd></div>
             </dl>
 
-            <button class="edit-data-button" type="button">Editar datos</button>
+            <button class="edit-data-button" type="button" (click)="openDrawer('edit')">Editar datos</button>
             <div class="decision-actions">
-              <button type="button" (click)="decide('Aprobada')">Aprobar</button>
-              <button type="button" (click)="decide('Rechazada')">Rechazar</button>
+              <button type="button" (click)="openDrawer('approve')">Aprobar</button>
+              <button type="button" (click)="openDrawer('reject')">Rechazar</button>
             </div>
           </aside>
         }
@@ -173,3 +173,12 @@
     </main>
   </div>
 </div>
+
+@if (drawerMode(); as mode) {
+  <app-request-drawer
+    [mode]="mode"
+    [request]="selectedRequest()"
+    (closed)="closeDrawer()"
+    (completed)="completeDrawer($event)"
+  />
+}

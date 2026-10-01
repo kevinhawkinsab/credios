@@ -5,22 +5,10 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { RequestDrawer, RequestDrawerCompletedEvent } from '../../components/request-drawer/request-drawer';
+import { CreditRequest, RequestStatus } from '../../models/credit-request';
 
-type RequestStatus = 'Pendiente' | 'Aprobada' | 'Rechazada';
 type RequestFilter = 'Todos' | RequestStatus;
-
-interface CreditRequest {
-  readonly id: string;
-  readonly date: string;
-  readonly client: string;
-  readonly nationalId: string;
-  readonly amount: string;
-  readonly term: string;
-  readonly email: string;
-  readonly phone: string;
-  readonly status: RequestStatus;
-  readonly initials: string;
-}
 
 const INITIAL_REQUESTS: readonly CreditRequest[] = [
   {
@@ -123,7 +111,7 @@ const INITIAL_REQUESTS: readonly CreditRequest[] = [
 
 @Component({
   selector: 'app-requests-page',
-  imports: [RouterLink],
+  imports: [RequestDrawer, RouterLink],
   templateUrl: './requests-page.html',
   styleUrl: './requests-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -134,6 +122,7 @@ export class RequestsPage {
   protected readonly selectedFilter = signal<RequestFilter>('Todos');
   protected readonly selectedRequestId = signal(INITIAL_REQUESTS[0].id);
   protected readonly requests = signal<readonly CreditRequest[]>(INITIAL_REQUESTS);
+  protected readonly drawerMode = signal<RequestDrawerMode | null>(null);
 
   protected readonly filteredRequests = computed(() => {
     const search = this.searchTerm().trim().toLowerCase();
@@ -157,6 +146,22 @@ export class RequestsPage {
       this.requests()[0]
     );
   });
+
+  protected openDrawer(mode: RequestDrawerMode): void {
+    this.drawerMode.set(mode);
+  }
+
+  protected closeDrawer(): void {
+    this.drawerMode.set(null);
+  }
+
+  protected completeDrawer(event: RequestDrawerCompletedEvent): void {
+    if (event.mode === 'approve' || event.mode === 'reject') {
+      this.decide(event.mode === 'approve' ? 'Aprobada' : 'Rechazada');
+    }
+
+    this.closeDrawer();
+  }
 
   protected toggleSidebar(): void {
     this.sidebarOpen.update((isOpen) => !isOpen);
@@ -191,3 +196,5 @@ export class RequestsPage {
     return `status-pill status-pill--${status.toLowerCase()}`;
   }
 }
+
+type RequestDrawerMode = 'create' | 'edit' | 'approve' | 'reject';
