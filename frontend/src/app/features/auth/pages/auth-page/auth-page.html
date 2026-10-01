@@ -1,0 +1,187 @@
+<main class="auth-shell">
+  <section class="auth-frame" aria-label="CrediPlus acceso de usuario">
+    <aside class="brand-panel">
+      <div class="brand-panel__topbar">
+        <a class="brand" routerLink="/login" aria-label="CrediPlus, ir al inicio de sesión">
+          <span class="brand__mark" aria-hidden="true">+</span>
+          <span class="brand__name">Credi<span>Plus</span></span>
+        </a>
+      </div>
+
+      <div class="brand-panel__content">
+        <p class="eyebrow">{{ isLogin() ? 'TU PRÓXIMO PASO EMPIEZA AQUÍ' : 'UN CRÉDITO MÁS HUMANO' }}</p>
+        <h1>
+          @if (isLogin()) {
+            <span>Decisiones claras.</span>
+            <strong>Planes posibles.</strong>
+          } @else {
+            <span>Haz espacio para</span>
+            <strong>lo que sigue.</strong>
+          }
+        </h1>
+        <p class="brand-panel__description">
+          {{ isLogin()
+            ? 'Una forma más humana de gestionar el crédito, desde la primera solicitud hasta la decisión final.'
+            : 'Registra tu cuenta y acompaña cada solicitud con una visión completa.' }}
+        </p>
+      </div>
+
+      <div class="brand-panel__art" aria-hidden="true">
+        <div class="art-orbit art-orbit--outer"></div>
+        <div class="art-orbit art-orbit--inner"></div>
+        <div class="request-card">
+          <p>{{ isLogin() ? 'Solicitud en revisión' : 'Tu espacio financiero' }}</p>
+          @if (isLogin()) {
+            <strong>$12,500</strong>
+            <div class="request-card__meta">
+              <span>24 meses</span>
+              <b>En análisis</b>
+            </div>
+          } @else {
+            <strong>Listo para<br />empezar</strong>
+            <div class="request-card__meta">
+              <span>Seguro · Simple</span>
+              <b>CrediPlus</b>
+            </div>
+          }
+        </div>
+      </div>
+
+      <footer class="brand-panel__footer">
+        <span>CrediPlus</span>
+        <span>Finanzas con propósito</span>
+      </footer>
+    </aside>
+
+    <section class="form-panel">
+      <div class="form-panel__language" aria-label="Idioma actual">
+        <span>ES</span>
+        <span aria-hidden="true">⌄</span>
+      </div>
+
+      <div class="form-content">
+        <p class="eyebrow">{{ isLogin() ? 'BIENVENIDO DE VUELTA' : 'COMIENZA EN MINUTOS' }}</p>
+        <h2>{{ isLogin() ? 'Inicia sesión en tu cuenta' : 'Crea tu cuenta' }}</h2>
+        <p class="form-content__intro">
+          {{ isLogin() ? 'Continúa gestionando tus solicitudes de crédito.' : 'Tu información se utilizará para gestionar tus solicitudes.' }}
+        </p>
+
+        <nav class="mode-switch" aria-label="Acceso de usuario">
+          <a routerLink="/login" [class.mode-switch__active]="isLogin()">Iniciar sesión</a>
+          <a routerLink="/register" [class.mode-switch__active]="!isLogin()">Crear cuenta</a>
+        </nav>
+
+        @if (isLogin()) {
+          <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+            <div class="field-group">
+              <label for="login-email">Correo electrónico</label>
+              <input
+                id="login-email"
+                type="email"
+                formControlName="email"
+                placeholder="tu@correo.com"
+                autocomplete="email"
+                [attr.aria-invalid]="showError(loginForm.controls.email)"
+                aria-describedby="login-email-error"
+              />
+              @if (showError(loginForm.controls.email)) {
+                <span class="field-error" id="login-email-error">Introduce un correo válido.</span>
+              }
+            </div>
+
+            <div class="field-group">
+              <div class="field-label-row">
+                <label for="login-password">Contraseña</label>
+                <button class="text-action" type="button">¿La olvidaste?</button>
+              </div>
+              <input
+                id="login-password"
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                [attr.aria-invalid]="showError(loginForm.controls.password)"
+                aria-describedby="login-password-error"
+              />
+              @if (showError(loginForm.controls.password)) {
+                <span class="field-error" id="login-password-error">La contraseña debe tener al menos 6 caracteres.</span>
+              }
+            </div>
+
+            <label class="checkbox-field">
+              <input type="checkbox" formControlName="rememberDevice" />
+              <span>Recordar este dispositivo</span>
+            </label>
+
+            <button class="submit-button" type="submit">
+              <span>Entrar</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+        } @else {
+          <form class="auth-form auth-form--register" [formGroup]="registerForm" (ngSubmit)="submit()" novalidate>
+            <div class="field-grid">
+              <div class="field-group">
+                <label for="register-name">Nombre completo</label>
+                <input id="register-name" type="text" formControlName="fullName" placeholder="María González" autocomplete="name" [attr.aria-invalid]="showError(registerForm.controls.fullName)" />
+                @if (showError(registerForm.controls.fullName)) {
+                  <span class="field-error">Introduce tu nombre completo.</span>
+                }
+              </div>
+              <div class="field-group">
+                <label for="register-id">Cédula</label>
+                <input id="register-id" type="text" formControlName="nationalId" placeholder="8-123-456" autocomplete="off" [attr.aria-invalid]="showError(registerForm.controls.nationalId)" />
+                @if (showError(registerForm.controls.nationalId)) {
+                  <span class="field-error">Introduce tu cédula.</span>
+                }
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="register-email">Correo electrónico</label>
+              <input id="register-email" type="email" formControlName="email" placeholder="tu@correo.com" autocomplete="email" [attr.aria-invalid]="showError(registerForm.controls.email)" />
+              @if (showError(registerForm.controls.email)) {
+                <span class="field-error">Introduce un correo válido.</span>
+              }
+            </div>
+
+            <div class="field-grid">
+              <div class="field-group">
+                <label for="register-password">Contraseña</label>
+                <input id="register-password" type="password" formControlName="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password" [attr.aria-invalid]="showError(registerForm.controls.password)" />
+                @if (showError(registerForm.controls.password)) {
+                  <span class="field-error">Mínimo 6 caracteres.</span>
+                }
+              </div>
+              <div class="field-group">
+                <label for="register-confirm-password">Confirmar contraseña</label>
+                <input id="register-confirm-password" type="password" formControlName="confirmPassword" placeholder="Repite la contraseña" autocomplete="new-password" [attr.aria-invalid]="showError(registerForm.controls.confirmPassword)" />
+                @if (showError(registerForm.controls.confirmPassword) || (hasSubmitted() && registerForm.hasError('passwordsMismatch'))) {
+                  <span class="field-error">Las contraseñas deben coincidir.</span>
+                }
+              </div>
+            </div>
+
+            <label class="checkbox-field checkbox-field--terms">
+              <input type="checkbox" formControlName="acceptTerms" />
+              <span>Acepto los términos de uso y la política de privacidad.</span>
+            </label>
+
+            <button class="submit-button" type="submit">
+              <span>Crear cuenta</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+        }
+
+        @if (statusMessage()) {
+          <p class="success-message" role="status">{{ statusMessage() }}</p>
+        }
+
+        <p class="legal-copy">
+          Al continuar aceptas nuestros términos de uso y política de privacidad.
+        </p>
+      </div>
+    </section>
+  </section>
+</main>

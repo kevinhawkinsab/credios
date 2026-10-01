@@ -1,0 +1,175 @@
+<div class="requests-shell">
+  <button
+    class="mobile-menu-button"
+    type="button"
+    aria-label="Abrir menú de navegación"
+    [attr.aria-expanded]="sidebarOpen()"
+    (click)="toggleSidebar()"
+  >
+    <span></span><span></span><span></span>
+  </button>
+
+  @if (sidebarOpen()) {
+    <button class="sidebar-backdrop" type="button" aria-label="Cerrar menú" (click)="closeSidebar()"></button>
+  }
+
+  <aside class="requests-sidebar" [class.requests-sidebar--open]="sidebarOpen()">
+    <a class="requests-brand" routerLink="/dashboard" (click)="closeSidebar()" aria-label="CrediPlus, ir al dashboard">
+      <span class="requests-brand__mark" aria-hidden="true">+</span>
+      <span class="requests-brand__name">Credi<span>Plus</span></span>
+    </a>
+
+    <nav class="requests-nav" aria-label="Navegación principal">
+      <p class="requests-nav__label">ESPACIO DE TRABAJO</p>
+      <a class="requests-nav__item" routerLink="/dashboard" (click)="closeSidebar()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="1.5" /></svg>
+        <span>Resumen</span>
+      </a>
+      <a class="requests-nav__item requests-nav__item--active" routerLink="/solicitudes" (click)="closeSidebar()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="1.5" /><path d="M9 8h6M9 12h6M9 16h4" /></svg>
+        <span>Solicitudes</span>
+      </a>
+    </nav>
+
+    <div class="requests-user">
+      <div class="requests-user__avatar">ER</div>
+      <div>
+        <strong>Equipo de riesgo</strong>
+        <span>Administrador</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="requests-main">
+    <header class="requests-header">
+      <div class="requests-date">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M8 3v4M16 3v4M4 9h16" /></svg>
+        <div>
+          <span>HOY</span>
+          <strong>Jueves, 01 De Octubre De 2026</strong>
+        </div>
+      </div>
+      <button class="sign-out-button" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6H6.5A1.5 1.5 0 0 0 5 7.5v9A1.5 1.5 0 0 0 6.5 18H10M14 8l4 4-4 4M18 12H9" /></svg>
+        <span>Cerrar sesión</span>
+      </button>
+    </header>
+
+    <main class="requests-content">
+      <section class="requests-hero" aria-labelledby="requests-title">
+        <div class="requests-hero__copy">
+          <p> CREDIPLUS · GESTIÓN INTELIGENTE</p>
+          <h1 id="requests-title">Encuentra el crédito<br /><strong>que mueve sus planes.</strong></h1>
+          <span>Revisa cada solicitud con contexto y toma decisiones con confianza.</span>
+        </div>
+        <div class="requests-hero__illustration" aria-hidden="true">
+          <div class="hero-orbit hero-orbit--large"></div>
+          <div class="hero-orbit hero-orbit--small"></div>
+          <div class="document-icon">
+            <div class="document-icon__fold"></div>
+            <div class="document-icon__lines"></div>
+            <div class="document-icon__coin">$</div>
+          </div>
+          <div class="hero-money hero-money--large">$</div>
+          <div class="hero-money hero-money--small">$</div>
+          <div class="hero-request-card">
+            <span>Solicitud nueva</span>
+            <strong>$12,500</strong>
+            <small>Plazo · 24 meses</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="requests-layout" aria-label="Gestión de solicitudes">
+        <article class="request-table-card">
+          <div class="request-toolbar">
+            <label class="search-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" /><path d="m16 16 4.2 4.2" /></svg>
+              <span class="sr-only">Buscar solicitud</span>
+              <input type="search" placeholder="Buscar por ID o cédula..." [value]="searchTerm()" (input)="updateSearch($event)" />
+            </label>
+            <label class="status-filter">
+              <span>Estado</span>
+              <select [value]="selectedFilter()" (change)="updateFilter($event)">
+                <option value="Todos">Todos</option>
+                <option value="Pendiente">Pendientes</option>
+                <option value="Aprobada">Aprobadas</option>
+                <option value="Rechazada">Rechazadas</option>
+              </select>
+            </label>
+            <button class="new-request-button" type="button"><span>+</span> Nueva solicitud</button>
+          </div>
+
+          <div class="request-table-wrap">
+            <table class="request-table">
+              <thead>
+                <tr>
+                  <th>Solicitud</th>
+                  <th>Cliente</th>
+                  <th>Monto</th>
+                  <th>Plazo</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (request of filteredRequests(); track request.id) {
+                  <tr [class.request-row--selected]="request.id === selectedRequestId()" (click)="selectRequest(request)" (keydown.enter)="selectRequest(request)" tabindex="0">
+                    <td><strong>{{ request.id }}</strong><small>{{ request.date }}</small></td>
+                    <td><strong>{{ request.client }}</strong><small>{{ request.nationalId }}</small></td>
+                    <td><strong>{{ request.amount }}</strong></td>
+                    <td>{{ request.term }}</td>
+                    <td><span [class]="statusClass(request.status)"><i></i>{{ request.status }}</span></td>
+                  </tr>
+                } @empty {
+                  <tr class="empty-row"><td colspan="5">No encontramos solicitudes con esos filtros.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <span>Mostrando <strong>{{ filteredRequests().length }}</strong> de {{ requests().length }}</span>
+            <div class="pagination"><button type="button" disabled>←</button><span>Página 1</span><button type="button" disabled>→</button></div>
+          </div>
+        </article>
+
+        @if (selectedRequest(); as request) {
+          <aside class="request-detail-card" aria-label="Detalle de solicitud seleccionada">
+            <div class="detail-profile">
+              <div class="detail-avatar-ring"><span>{{ request.initials }}</span><i></i></div>
+              <h2>{{ request.client }}</h2>
+              <span>Cliente solicitante</span>
+              <span [class]="statusClass(request.status)"><i></i>{{ request.status }}</span>
+            </div>
+
+            <div class="detail-shortcuts">
+              <button type="button"><span aria-hidden="true">✉</span>Contacto</button>
+              <button type="button"><span aria-hidden="true">♜</span>Actividad</button>
+              <button type="button"><span aria-hidden="true">▤</span>Documentos</button>
+            </div>
+
+            <div class="detail-amount">
+              <span>Monto solicitado</span>
+              <strong>{{ request.amount }}</strong>
+              <small>para {{ request.term }}</small>
+            </div>
+
+            <dl class="detail-data">
+              <div><dt>Cédula</dt><dd>{{ request.nationalId }}</dd></div>
+              <div><dt>ID de solicitud</dt><dd>{{ request.id }}</dd></div>
+              <div><dt>Fecha de solicitud</dt><dd>{{ request.date }}</dd></div>
+              <div><dt>Correo</dt><dd>{{ request.email }}</dd></div>
+              <div><dt>Teléfono</dt><dd>{{ request.phone }}</dd></div>
+            </dl>
+
+            <button class="edit-data-button" type="button">Editar datos</button>
+            <div class="decision-actions">
+              <button type="button" (click)="decide('Aprobada')">Aprobar</button>
+              <button type="button" (click)="decide('Rechazada')">Rechazar</button>
+            </div>
+          </aside>
+        }
+      </section>
+    </main>
+  </div>
+</div>
