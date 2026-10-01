@@ -3,6 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module.js';
+import { PrismaService } from './../src/prisma/prisma.service.js';
+
+process.env.JWT_ACCESS_SECRET = 'test-secret';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -10,15 +13,19 @@ describe('AppController (e2e)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue({ $connect: async () => undefined, $disconnect: async () => undefined })
+      .compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
     await app.init();
   });
 
   it('/ (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/api')
       .expect(200)
       .expect('Hello World!');
   });
