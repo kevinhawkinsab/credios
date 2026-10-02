@@ -907,3 +907,68 @@
   min-height: 4rem;
   gap: 0.7rem;
 }
+
+.dashboard-sidebar {
+  border-right-color: #1e3858;
+  background: linear-gradient(180deg, #0d1b2f 0%, #10253f 100%);
+  box-shadow: 14px 0 30px rgba(5, 18, 34, 0.12);
+}
+
+.dashboard-brand {
+  color: #fff;
+}
+
+.dashboard-brand__name span {
+  color: #ff985d;
+}
+
+.dashboard-nav__label {
+  color: #8298b8;
+}
+
+.dashboard-nav__item {
+  color: #9aadc7;
+}
+
+.dashboard-nav__item:hover {
+  border-left-color: #ff985d;
+  color: #fff;
+  background: rgba(255, 152, 93, 0.08);
+}
+
+.dashboard-nav__item--active {
+  border-left-color: #ff985d;
+  color: #fff;
+  background: linear-gradient(90deg, rgba(244, 119, 49, 0.2), rgba(244, 119, 49, 0.06));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dashboard-nav__item svg {
+  width: 2rem;
+  height: 2rem;
+  box-sizing: border-box;
+  padding: 0.42rem;
+  border-radius: 0.55rem;
+  background: #172f4d;
+  stroke: #9aadc7;
+  stroke-width: 1.7;
+}
+
+.dashboard-nav__item:hover svg,
+.dashboard-nav__item--active svg {
+  background: #f47731;
+  fill: none;
+  stroke: #fff;
+}
+
+.dashboard-user {
+  border-top-color: #28415f;
+}
+
+.dashboard-user strong {
+  color: #fff;
+}
+
+.dashboard-user span {
+  color: #8ea3c0;
+}

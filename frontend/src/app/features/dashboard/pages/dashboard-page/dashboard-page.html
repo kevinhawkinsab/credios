@@ -32,10 +32,10 @@
     </nav>
 
     <div class="dashboard-user">
-      <div class="dashboard-user__avatar">ER</div>
+      <div class="dashboard-user__avatar">{{ currentUserInitials() }}</div>
       <div>
-        <strong>Equipo de riesgo</strong>
-        <span>Administrador</span>
+        <strong>{{ currentUser()?.fullName ?? 'Usuario' }}</strong>
+        <span>{{ userRoleLabel() }}</span>
       </div>
     </div>
   </aside>
@@ -111,7 +111,6 @@
             @for (request of liveRecentRequests(); track request.reference) {
               <div class="request-row">
                 <div class="request-person">
-                  <span class="request-person__avatar">{{ request.initials }}</span>
                   <div>
                     <strong>{{ request.name }}</strong>
                     <span>{{ request.reference }}</span>

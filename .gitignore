@@ -30,12 +30,6 @@ libpeerconnection.log
 testem.log
 
 
-**/.env
-**/.env.*
-!**/.env.example
-!**/.env.template
-
-
 **/.temp/
 **/.tmp/
 **/pids/

@@ -32,10 +32,10 @@
     </nav>
 
     <div class="requests-user">
-      <div class="requests-user__avatar">ER</div>
+      <div class="requests-user__avatar">{{ currentUserInitials() }}</div>
       <div>
-        <strong>Equipo de riesgo</strong>
-        <span>Administrador</span>
+        <strong>{{ currentUser()?.fullName ?? 'Usuario' }}</strong>
+        <span>{{ userRoleLabel() }}</span>
       </div>
     </div>
   </aside>
@@ -86,7 +86,11 @@
         </div>
       </section>
 
-      <section class="requests-layout" aria-label="Gestión de solicitudes">
+      <section
+        class="requests-layout"
+        [class.requests-layout--empty]="requests().length === 0"
+        aria-label="Gestión de solicitudes"
+      >
         <article class="request-table-card">
           <div class="request-toolbar">
             <label class="search-field">
@@ -127,16 +131,27 @@
                     <td><span [class]="statusClass(request.status)"><i></i>{{ request.status }}</span></td>
                   </tr>
                 } @empty {
-                  <tr class="empty-row"><td colspan="5">No encontramos solicitudes con esos filtros.</td></tr>
+                  <tr class="empty-row">
+                    <td colspan="5">
+                      <div class="requests-empty-state" role="status">
+                        <div class="requests-empty-state__copy text-center">
+                          <strong>{{ requests().length === 0 ? 'Aún no tienes solicitudes' : 'No encontramos solicitudes' }}</strong>
+                          <p>{{ requests().length === 0 ? 'Crea tu primera solicitud para comenzar a gestionar tu crédito.' : 'Prueba con otro término de búsqueda o cambia el filtro de estado.' }}</p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 }
               </tbody>
             </table>
           </div>
 
+          @if (requests().length > 0) {
           <div class="table-footer">
             <span>Mostrando <strong>{{ filteredRequests().length }}</strong> de {{ requests().length }}</span>
             <div class="pagination"><button type="button" disabled>←</button><span>Página 1</span><button type="button" disabled>→</button></div>
           </div>
+          }
         </article>
 
         @if (selectedRequest(); as request) {
@@ -169,10 +184,12 @@
             </dl>
 
             <button class="edit-data-button" type="button" [disabled]="isSubmitting()" (click)="openDrawer('edit')">Editar datos</button>
-            <div class="decision-actions">
-              <button type="button" [disabled]="isSubmitting()" (click)="openDrawer('approve')">Aprobar</button>
-              <button type="button" [disabled]="isSubmitting()" (click)="openDrawer('reject')">Rechazar</button>
-            </div>
+            @if (currentUser()?.role === 'ADMIN') {
+              <div class="decision-actions">
+                <button type="button" [disabled]="isSubmitting()" (click)="openDrawer('approve')">Aprobar</button>
+                <button type="button" [disabled]="isSubmitting()" (click)="openDrawer('reject')">Rechazar</button>
+              </div>
+            }
           </aside>
         }
       </section>

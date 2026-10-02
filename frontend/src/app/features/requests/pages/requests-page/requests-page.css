@@ -1040,6 +1040,10 @@
   margin-top: 1.5rem;
 }
 
+.requests-layout--empty {
+  grid-template-columns: 1fr;
+}
+
 .request-toolbar {
   min-height: 4.25rem;
   padding: 0.7rem 1rem;
@@ -1073,4 +1077,141 @@
 
 .detail-profile h2 {
   font-size: 1.05rem;
+}
+
+.requests-sidebar {
+  border-right-color: #1e3858;
+  background: linear-gradient(180deg, #0d1b2f 0%, #10253f 100%);
+  box-shadow: 14px 0 30px rgba(5, 18, 34, 0.12);
+}
+
+.requests-brand {
+  color: #fff;
+}
+
+.requests-brand__name span {
+  color: #ff985d;
+}
+
+.requests-nav__label {
+  color: #8298b8;
+}
+
+.requests-nav__item {
+  color: #9aadc7;
+}
+
+.requests-nav__item:hover {
+  border-left-color: #ff985d;
+  color: #fff;
+  background: rgba(255, 152, 93, 0.08);
+}
+
+.requests-nav__item--active {
+  border-left-color: #ff985d;
+  color: #fff;
+  background: linear-gradient(90deg, rgba(244, 119, 49, 0.2), rgba(244, 119, 49, 0.06));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.requests-nav__item svg {
+  width: 2rem;
+  height: 2rem;
+  padding: 0.42rem;
+  border-radius: 0.55rem;
+  background: #172f4d;
+  stroke: #9aadc7;
+  stroke-width: 1.7;
+}
+
+.requests-nav__item:hover svg,
+.requests-nav__item--active svg {
+  background: #f47731;
+  fill: none;
+  stroke: #fff;
+}
+
+.requests-user {
+  border-top-color: #28415f;
+}
+
+.requests-user strong {
+  color: #fff;
+}
+
+.requests-user span {
+  color: #8ea3c0;
+}
+
+.empty-row td {
+  height: auto;
+  padding: 0;
+}
+
+.requests-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  min-height: 9.5rem;
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+}
+
+.requests-empty-state__icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  color: #f47731;
+  background: #fff1e8;
+}
+
+.requests-empty-state__icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.requests-empty-state__copy strong {
+  display: block;
+  color: #13294b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.requests-empty-state__copy p {
+  margin: 0.3rem 0 0;
+  color: #7185a2;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.empty-state-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.35rem;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: #fff;
+  background: #f47731;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .requests-empty-state {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .requests-empty-state__copy p {
+    margin-inline: auto;
+  }
 }

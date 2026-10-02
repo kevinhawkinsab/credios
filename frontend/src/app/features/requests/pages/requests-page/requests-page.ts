@@ -140,6 +140,12 @@ export class RequestsPage implements OnInit {
   protected readonly isLoading = signal(true);
   protected readonly isSubmitting = signal(false);
   protected readonly loadError = signal('');
+  protected readonly currentUser = this.authService.user;
+  protected readonly currentUserInitials = computed(() => this.initials(this.currentUser()?.fullName ?? 'Usuario'));
+
+  protected userRoleLabel(): string {
+    return this.currentUser()?.role === 'ADMIN' ? 'Administrador' : 'Solicitante';
+  }
 
   ngOnInit(): void {
     this.loadRequests();

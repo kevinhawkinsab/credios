@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
@@ -50,6 +50,12 @@ export class DashboardPage implements OnInit {
   protected readonly approvedTotal = signal(0);
   protected readonly isLoading = signal(true);
   protected readonly loadError = signal('');
+  protected readonly currentUser = this.authService.user;
+  protected readonly currentUserInitials = computed(() => this.initials(this.currentUser()?.fullName ?? 'Usuario'));
+
+  protected userRoleLabel(): string {
+    return this.currentUser()?.role === 'ADMIN' ? 'Administrador' : 'Solicitante';
+  }
 
   protected readonly metrics: readonly Metric[] = [
     {
