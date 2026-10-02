@@ -1,6 +1,9 @@
-import { IsBoolean } from 'class-validator';
+import { IsIn, IsString } from 'class-validator';
+import { USER_STATUS } from '../../common/constants/user.constants.js';
+import type { UserStatus } from '../../common/constants/user.constants.js';
 
 export class UpdateUserStatusDto {
-  @IsBoolean()
-  isActive!: boolean;
+  @IsString()
+  @IsIn(Object.values(USER_STATUS))
+  status!: UserStatus;
 }

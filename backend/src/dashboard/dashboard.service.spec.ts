@@ -1,11 +1,11 @@
-import { Role } from '@prisma/client';
+import { USER_ROLE } from '../common/constants/user.constants.js';
 import { describe, expect, it, vi } from 'vitest';
 import { DashboardService } from './dashboard.service.js';
 
 describe('DashboardService', () => {
   it('calcula la tasa de aprobación sobre solicitudes resueltas', async () => {
     const prisma = {
-      creditRequest: {
+      credit_requests: {
         count: vi.fn(),
         aggregate: vi.fn(),
         findMany: vi.fn(),
@@ -14,7 +14,7 @@ describe('DashboardService', () => {
     };
     const service = new DashboardService(prisma as never);
 
-    const summary = await service.getSummary({ sub: 'admin-id', email: 'admin@example.com', role: Role.ADMIN });
+    const summary = await service.getSummary({ sub: 'admin-id', email: 'admin@example.com', role: USER_ROLE.ADMIN });
 
     expect(summary.metrics).toEqual({ received: 10, pending: 3, approved: 5, rejected: 2, approvalRate: 71.4, approvedAmount: 12500 });
     expect(prisma.$transaction).toHaveBeenCalledOnce();

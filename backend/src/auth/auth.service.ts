@@ -1,9 +1,10 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Role, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'node:crypto';
+import { USER_ROLE, USER_STATUS } from '../common/constants/user.constants.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh-token.dto.js';
@@ -21,16 +22,18 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const email = dto.email.trim().toLowerCase();
     const nationalId = dto.nationalId.trim();
-    const existing = await this.prisma.user.findFirst({ where: { OR: [{ email }, { nationalId }] }, select: { id: true } });
+    const existing = await this.prisma.user.findFirst({ where: { OR: [{ email }, { identification: nationalId }] }, select: { id: true } });
     if (existing) throw new ConflictException('El correo o la cédula ya están registrados');
 
     const user = await this.prisma.user.create({
       data: {
-        fullName: dto.fullName.trim(),
-        nationalId,
+        first_name: dto.fullName.trim().split(/\s+/)[0],
+        last_name: dto.fullName.trim().split(/\s+/).slice(1).join(' ') || null,
+        identification: nationalId,
         email,
         passwordHash: await bcrypt.hash(dto.password, 12),
-        role: Role.APPLICANT,
+        role: USER_ROLE.USER,
+        status: USER_STATUS.ACTIVE,
       },
     });
 
@@ -38,8 +41,8 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email.trim().toLowerCase() } });
-    if (!user || !user.isActive || !(await bcrypt.compare(dto.password, user.passwordHash))) {
+    const user = await this.prisma.user.findFirst({ where: { email: dto.email.trim().toLowerCase() } });
+    if (!user || user.status !== USER_STATUS.ACTIVE || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Correo o contraseña incorrectos');
     }
 
@@ -50,15 +53,15 @@ export class AuthService {
     const parsed = this.parseRefreshToken(dto.refreshToken);
     if (!parsed) throw new UnauthorizedException('El refresh token no es válido');
     const stored = await this.prisma.refreshToken.findUnique({ where: { id: parsed.id }, include: { user: true } });
-    if (!stored || stored.revokedAt || stored.expiresAt <= new Date() || !stored.user.isActive) {
+    if (!stored || stored.revokedAt || stored.expiresAt <= new Date() || stored.user.status !== USER_STATUS.ACTIVE) {
       throw new UnauthorizedException('El refresh token no es válido o ha expirado');
     }
     if (!(await bcrypt.compare(parsed.secret, stored.tokenHash))) {
       throw new UnauthorizedException('El refresh token no es válido');
     }
 
-    await this.prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date(), rotatedAt: new Date() } });
-    return this.issueTokens(stored.user, stored.tokenFamily);
+    await this.prisma.refreshToken.update({ where: { id: stored.id }, data: { revokedAt: new Date() } });
+    return this.issueTokens(stored.user);
   }
 
   async logout(dto: RefreshTokenDto): Promise<{ message: string }> {
@@ -74,12 +77,12 @@ export class AuthService {
 
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.isActive) throw new UnauthorizedException('El usuario ya no está disponible');
+    if (!user || user.status !== USER_STATUS.ACTIVE) throw new UnauthorizedException('El usuario ya no está disponible');
     return this.toPublicUser(user);
   }
 
-  private async issueTokens(user: User, tokenFamily?: string) {
-    const payload: AuthenticatedUser = { sub: user.id, email: user.email, role: user.role };
+  private async issueTokens(user: User) {
+    const payload: AuthenticatedUser = { sub: user.id, email: user.email, role: user.role as AuthenticatedUser['role'] };
     const accessToken = await this.jwt.signAsync(payload, {
       secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRES_IN', '15m') as never,
@@ -87,7 +90,7 @@ export class AuthService {
     const secret = randomBytes(48).toString('hex');
     const expiresAt = this.expiryDate(this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d'));
     const stored = await this.prisma.refreshToken.create({
-      data: { userId: user.id, tokenHash: await bcrypt.hash(secret, 12), tokenFamily: tokenFamily ?? undefined, expiresAt },
+      data: { userId: user.id, tokenHash: await bcrypt.hash(secret, 12), expiresAt },
     });
 
     return { accessToken, refreshToken: `${stored.id}.${secret}`, expiresAt, user: this.toPublicUser(user) };
@@ -110,6 +113,13 @@ export class AuthService {
   }
 
   private toPublicUser(user: User) {
-    return { id: user.id, fullName: user.fullName, nationalId: user.nationalId, email: user.email, role: user.role };
+    return {
+      id: user.id,
+      fullName: [user.first_name, user.last_name].filter(Boolean).join(' '),
+      nationalId: user.identification,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    };
   }
 }

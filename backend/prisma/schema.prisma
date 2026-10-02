@@ -7,74 +7,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  ANALYST
-  APPLICANT
-}
-
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
 model User {
-  id            String         @id @default(uuid()) @db.Uuid
-  fullName      String         @map("full_name") @db.VarChar(120)
-  nationalId    String         @unique @map("national_id") @db.VarChar(30)
-  email         String         @unique @db.VarChar(160)
-  passwordHash  String         @map("password_hash")
-  role          Role           @default(APPLICANT)
-  isActive      Boolean        @default(true) @map("is_active")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  refreshTokens RefreshToken[]
-  applicantRequests CreditRequest[] @relation("ApplicantRequests")
-  createdRequests CreditRequest[] @relation("CreatedRequests")
-  reviewedRequests CreditRequest[] @relation("ReviewedRequests")
+  id                                                  String            @id @default(uuid()) @db.Uuid
+  email                                               String            @db.VarChar(255)
+  passwordHash                                        String            @map("password_hash") @db.VarChar(255)
+  first_name                                          String?           @db.VarChar(100)
+  last_name                                           String?           @db.VarChar(100)
+  identification                                      String?           @db.VarChar(50)
+  role                                                String            @default("USER") @db.VarChar(20)
+  status                                              String            @default("ACTIVE") @db.VarChar(20)
+  last_login_at                                       DateTime?         @db.Timestamptz(6)
+  createdAt                                           DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                                           DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  credit_requests_credit_requests_applicant_idTousers credit_requests[] @relation("credit_requests_applicant_idTousers")
+  credit_requests_credit_requests_created_byTousers   credit_requests[] @relation("credit_requests_created_byTousers")
+  credit_requests_credit_requests_reviewed_byTousers  credit_requests[] @relation("credit_requests_reviewed_byTousers")
+  refreshTokens                                       RefreshToken[]
 
-  @@index([role, isActive])
+  @@index([role])
+  @@index([status])
   @@map("users")
 }
 
-model CreditRequest {
-  id              String        @id @default(uuid()) @db.Uuid
-  requestNumber   String        @unique @map("request_number") @db.VarChar(30)
-  applicantId     String        @map("applicant_id") @db.Uuid
-  createdById     String        @map("created_by") @db.Uuid
-  amount          Decimal       @db.Decimal(12, 2)
-  termMonths      Int           @map("term_months") @db.SmallInt
-  status          RequestStatus @default(PENDING)
-  decisionComment String?       @map("decision_comment") @db.VarChar(1000)
-  reviewedById    String?       @map("reviewed_by") @db.Uuid
-  reviewedAt      DateTime?     @map("reviewed_at")
-  version         Int           @default(1)
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-  applicant       User          @relation("ApplicantRequests", fields: [applicantId], references: [id], onDelete: Restrict)
-  createdBy       User          @relation("CreatedRequests", fields: [createdById], references: [id], onDelete: Restrict)
-  reviewedBy      User?         @relation("ReviewedRequests", fields: [reviewedById], references: [id], onDelete: Restrict)
-
-  @@index([applicantId])
-  @@index([status, createdAt(sort: Desc)])
-  @@map("credit_requests")
-}
-
 model RefreshToken {
-  id          String    @id @default(uuid()) @db.Uuid
-  userId      String    @map("user_id") @db.Uuid
-  tokenHash   String    @map("token_hash")
-  tokenFamily String    @default(uuid()) @map("token_family") @db.Uuid
-  expiresAt   DateTime  @map("expires_at")
-  revokedAt   DateTime? @map("revoked_at")
-  rotatedAt   DateTime? @map("rotated_at")
-  ipAddress   String?   @map("ip_address") @db.Inet
-  userAgent   String?   @map("user_agent")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(uuid()) @db.Uuid
+  tokenHash      String    @unique(map: "refresh_tokens_token_hash_unique") @map("token_hash") @db.VarChar(255)
+  userId         String    @map("user_id") @db.Uuid
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt      DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revoked_reason String?   @db.VarChar(255)
+  last_used_at   DateTime? @db.Timestamptz(6)
+  ipAddress      String?   @map("ip_address") @db.Inet
+  userAgent      String?   @map("user_agent")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "refresh_tokens_user_fk")
 
   @@index([userId])
-  @@index([userId, expiresAt])
+  @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model credit_requests {
+  id                                        String    @id @db.Uuid
+  request_number                            String    @unique @db.VarChar(30)
+  applicant_id                              String    @db.Uuid
+  created_by                                String    @db.Uuid
+  amount                                    Decimal   @db.Decimal(12, 2)
+  term_months                               Int       @db.SmallInt
+  status                                    String    @default("PENDING") @db.VarChar(20)
+  decision_comment                          String?   @db.VarChar(1000)
+  reviewed_by                               String?   @db.Uuid
+  reviewed_at                               DateTime? @db.Timestamptz(6)
+  version                                   Int       @default(1)
+  created_at                                DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                DateTime  @default(now()) @db.Timestamptz(6)
+  users_credit_requests_applicant_idTousers User      @relation("credit_requests_applicant_idTousers", fields: [applicant_id], references: [id], onUpdate: NoAction, map: "credit_requests_applicant_fk")
+  users_credit_requests_created_byTousers   User      @relation("credit_requests_created_byTousers", fields: [created_by], references: [id], onUpdate: NoAction, map: "credit_requests_created_by_fk")
+  users_credit_requests_reviewed_byTousers  User?     @relation("credit_requests_reviewed_byTousers", fields: [reviewed_by], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "credit_requests_reviewed_by_fk")
+
+  @@index([applicant_id], map: "credit_requests_applicant_idx")
+  @@index([created_by])
+  @@index([reviewed_by])
+  @@index([status, created_at(sort: Desc)], map: "credit_requests_status_created_idx")
 }
