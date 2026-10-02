@@ -239,6 +239,32 @@
   font-weight: 400;
 }
 
+.drawer-primary-button:disabled,
+.decision-cancel:disabled,
+.decision-confirm:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.drawer-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.drawer-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid rgba(255, 255, 255, 0.38);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: drawer-loading-spin 700ms linear infinite;
+}
+
+@keyframes drawer-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
 .drawer-header--decision {
   align-items: flex-start;
   padding-bottom: 0;

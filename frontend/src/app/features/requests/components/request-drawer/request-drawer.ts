@@ -20,6 +20,9 @@ export type RequestDrawerMode = 'create' | 'edit' | 'approve' | 'reject';
 export interface RequestDrawerCompletedEvent {
   readonly mode: RequestDrawerMode;
   readonly comment: string;
+  readonly amount?: number;
+  readonly termMonths?: number;
+  readonly nationalId?: string;
 }
 
 @Component({
@@ -34,6 +37,7 @@ export class RequestDrawer implements OnInit {
 
   readonly mode = input.required<RequestDrawerMode>();
   readonly request = input<CreditRequest | undefined>();
+  readonly busy = input(false);
   readonly closed = output<void>();
   readonly completed = output<RequestDrawerCompletedEvent>();
 
@@ -112,6 +116,9 @@ export class RequestDrawer implements OnInit {
     this.completed.emit({
       mode: this.mode(),
       comment: this.decisionForm.controls.comment.value.trim(),
+      amount: this.requestForm.controls.amount.value,
+      termMonths: this.requestForm.controls.term.value,
+      nationalId: this.requestForm.controls.nationalId.value.trim(),
     });
   }
 

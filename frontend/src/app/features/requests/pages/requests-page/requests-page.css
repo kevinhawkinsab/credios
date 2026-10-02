@@ -220,6 +220,17 @@
   padding: clamp(2rem, 4vw, 3.35rem) clamp(1.5rem, 3.8vw, 3.7rem);
 }
 
+.requests-loading,
+.requests-error {
+  margin: 0 0 1rem;
+  color: #66718a;
+  font-size: 0.85rem;
+}
+
+.requests-error {
+  color: #b84b58;
+}
+
 .requests-hero {
   position: relative;
   min-height: 18.3rem;

@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { DashboardService } from '../../data/dashboard.service';
+import { DashboardSummary } from '../../data/dashboard.models';
 
 type RequestStatus = 'Pendiente' | 'Aprobada' | 'Rechazada';
 
@@ -34,11 +37,19 @@ interface ChartBar {
   styleUrl: './dashboard-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardPage {
+export class DashboardPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly dashboardService = inject(DashboardService);
   protected readonly sidebarOpen = signal(false);
   protected readonly selectedPeriod = signal('Septiembre');
+  protected readonly liveMetrics = signal<readonly Metric[]>([]);
+  protected readonly liveRecentRequests = signal<readonly RecentRequest[]>([]);
+  protected readonly approvalRate = signal(0);
+  protected readonly receivedTotal = signal(0);
+  protected readonly approvedTotal = signal(0);
+  protected readonly isLoading = signal(true);
+  protected readonly loadError = signal('');
 
   protected readonly metrics: readonly Metric[] = [
     {
@@ -112,6 +123,71 @@ export class DashboardPage {
     { month: '7', height: 79 },
     { month: '8', height: 94, active: true },
   ];
+
+  ngOnInit(): void {
+    this.dashboardService.getSummary().subscribe({
+      next: (summary) => this.applySummary(summary),
+      error: (error: HttpErrorResponse) => {
+        this.loadError.set(this.dashboardErrorMessage(error));
+        this.isLoading.set(false);
+      },
+      complete: () => this.isLoading.set(false),
+    });
+  }
+
+  private dashboardErrorMessage(error: HttpErrorResponse): string {
+    if (error.status === 0) {
+      return 'No pudimos conectar con el servidor. Verifica tu conexión e inténtalo nuevamente.';
+    }
+    if (error.status === 401) {
+      return 'Tu sesión expiró. Inicia sesión nuevamente para continuar.';
+    }
+    if (error.status === 403) {
+      return 'No tienes permisos para consultar el resumen.';
+    }
+    return 'No pudimos cargar el resumen. Inténtalo nuevamente.';
+  }
+
+  private applySummary(summary: DashboardSummary): void {
+    const metrics = summary.metrics;
+    this.approvalRate.set(metrics.approvalRate);
+    this.receivedTotal.set(metrics.received);
+    this.approvedTotal.set(metrics.approved);
+    this.liveMetrics.set([
+      { label: 'Solicitudes recibidas', value: String(metrics.received), detail: 'Total registrado', icon: 'arrow', tone: 'orange' },
+      { label: 'Pendientes de revisión', value: String(metrics.pending), detail: 'Requieren atención', icon: 'clock', tone: 'gold' },
+      { label: 'Tasa de aprobación', value: `${metrics.approvalRate}%`, detail: `${metrics.approved} aprobadas`, icon: 'check', tone: 'green' },
+      { label: 'Monto aprobado', value: this.formatCurrency(metrics.approvedAmount), detail: 'Total aprobado', icon: 'money', tone: 'navy' },
+    ]);
+    this.liveRecentRequests.set(summary.recentRequests.map((request) => ({
+      initials: this.initials(request.applicant.fullName),
+      name: request.applicant.fullName,
+      reference: `${request.requestNumber} · ${request.applicant.nationalId ?? 'Sin cédula'}`,
+      amount: this.formatCurrency(request.amount),
+      status: this.statusLabel(request.status),
+    })));
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  private initials(name: string): string {
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+  }
+
+  private statusLabel(status: 'PENDING' | 'APPROVED' | 'REJECTED'): RequestStatus {
+    const labels: Record<'PENDING' | 'APPROVED' | 'REJECTED', RequestStatus> = {
+      PENDING: 'Pendiente',
+      APPROVED: 'Aprobada',
+      REJECTED: 'Rechazada',
+    };
+    return labels[status];
+  }
 
   protected toggleSidebar(): void {
     this.sidebarOpen.update((isOpen) => !isOpen);

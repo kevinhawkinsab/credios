@@ -56,6 +56,12 @@
     </header>
 
     <main class="dashboard-content">
+      @if (isLoading()) {
+        <p class="dashboard-loading" role="status">Cargando resumen...</p>
+      }
+      @if (loadError()) {
+        <p class="dashboard-error" role="alert">{{ loadError() }}</p>
+      }
       <section class="health-banner" aria-labelledby="health-title">
         <div class="health-banner__copy">
           <p class="section-kicker">LECTURA RÁPIDA</p>
@@ -65,14 +71,14 @@
         </div>
         <div class="approval-dial" aria-label="74 por ciento de aprobación">
           <div>
-            <strong>74<small>%</small></strong>
+            <strong>{{ approvalRate() }}<small>%</small></strong>
             <span>APROBACIÓN</span>
           </div>
         </div>
       </section>
 
       <section class="metrics-grid" aria-label="Indicadores principales">
-        @for (metric of metrics; track metric.label) {
+            @for (metric of liveMetrics(); track metric.label) {
           <article class="metric-card">
             <div class="metric-card__topline">
               <span>{{ metric.label }}</span>
@@ -102,7 +108,7 @@
           </div>
 
           <div class="request-list">
-            @for (request of recentRequests; track request.reference) {
+            @for (request of liveRecentRequests(); track request.reference) {
               <div class="request-row">
                 <div class="request-person">
                   <span class="request-person__avatar">{{ request.initials }}</span>
@@ -144,8 +150,8 @@
           </div>
 
           <div class="chart-legend">
-            <span><i class="legend-dot legend-dot--orange"></i>Recibidas <strong>248</strong></span>
-            <span><i class="legend-dot legend-dot--green"></i>Aprobadas <strong>184</strong></span>
+            <span><i class="legend-dot legend-dot--orange"></i>Recibidas <strong>{{ receivedTotal() }}</strong></span>
+            <span><i class="legend-dot legend-dot--green"></i>Aprobadas <strong>{{ approvedTotal() }}</strong></span>
           </div>
         </article>
       </section>

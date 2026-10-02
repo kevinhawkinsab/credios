@@ -3,13 +3,20 @@ import {
   Component,
   computed,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { UsersService } from '../../../users/data/users.service';
 import { RequestDrawer, RequestDrawerCompletedEvent } from '../../components/request-drawer/request-drawer';
 import { CreditRequest, RequestStatus } from '../../models/credit-request';
+import { CreditRequestsService } from '../../data/credit-requests.service';
+import { ApiCreditRequest } from '../../data/credit-requests.models';
+import { switchMap, throwError } from 'rxjs';
+import Swal from 'sweetalert2';
 
 type RequestFilter = 'Todos' | RequestStatus;
 
@@ -119,15 +126,24 @@ const INITIAL_REQUESTS: readonly CreditRequest[] = [
   styleUrl: './requests-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RequestsPage {
+export class RequestsPage implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly creditRequestsService = inject(CreditRequestsService);
+  private readonly usersService = inject(UsersService);
   protected readonly sidebarOpen = signal(false);
   protected readonly searchTerm = signal('');
   protected readonly selectedFilter = signal<RequestFilter>('Todos');
-  protected readonly selectedRequestId = signal(INITIAL_REQUESTS[0].id);
-  protected readonly requests = signal<readonly CreditRequest[]>(INITIAL_REQUESTS);
+  protected readonly selectedRequestId = signal('');
+  protected readonly requests = signal<readonly CreditRequest[]>([]);
   protected readonly drawerMode = signal<RequestDrawerMode | null>(null);
+  protected readonly isLoading = signal(true);
+  protected readonly isSubmitting = signal(false);
+  protected readonly loadError = signal('');
+
+  ngOnInit(): void {
+    this.loadRequests();
+  }
 
   protected readonly filteredRequests = computed(() => {
     const search = this.searchTerm().trim().toLowerCase();
@@ -161,11 +177,75 @@ export class RequestsPage {
   }
 
   protected completeDrawer(event: RequestDrawerCompletedEvent): void {
-    if (event.mode === 'approve' || event.mode === 'reject') {
-      this.decide(event.mode === 'approve' ? 'Aprobada' : 'Rechazada');
+    const request = this.selectedRequest();
+    const requestId = request?.backendId;
+    let operation$;
+
+    if (event.mode === 'create') {
+      const create$ = this.authService.user()?.role === 'ADMIN'
+        ? this.usersService.list().pipe(
+            switchMap((users) => {
+              const applicant = users.find((user) => user.nationalId === event.nationalId);
+              if (!applicant) {
+                return throwError(() => new Error('No encontramos un usuario con esa cédula.'));
+              }
+              return this.creditRequestsService.create({
+                applicantId: applicant.id,
+                amount: event.amount ?? 0,
+                termMonths: event.termMonths ?? 0,
+              });
+            }),
+          )
+        : this.creditRequestsService.create({
+            amount: event.amount ?? 0,
+            termMonths: event.termMonths ?? 0,
+          });
+      operation$ = create$;
+    } else if (!requestId) {
+      this.loadError.set('No se pudo identificar la solicitud seleccionada.');
+      return;
+    } else if (event.mode === 'edit') {
+      operation$ = this.creditRequestsService.update(requestId, {
+        amount: event.amount,
+        termMonths: event.termMonths,
+      });
+    } else if (event.mode === 'approve') {
+      operation$ = this.creditRequestsService.approve(requestId, { comment: event.comment });
+    } else {
+      operation$ = this.creditRequestsService.reject(requestId, { comment: event.comment });
     }
 
-    this.closeDrawer();
+    this.isSubmitting.set(true);
+    operation$.subscribe({
+      next: () => {
+        this.closeDrawer();
+        this.loadRequests();
+        void Swal.fire({
+          title: this.successTitle(event.mode),
+          text: event.mode === 'reject'
+            ? 'La solicitud fue rechazada correctamente.'
+            : 'La operación se completó correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Continuar',
+          buttonsStyling: false,
+          customClass: this.alertClasses(),
+        });
+      },
+      error: (error: HttpErrorResponse | Error) => {
+        const message = this.apiErrorMessage(error);
+        this.loadError.set(message);
+        this.isSubmitting.set(false);
+        void Swal.fire({
+          title: 'No se pudo completar la operación',
+          text: message,
+          icon: 'error',
+          confirmButtonText: 'Entendido',
+          buttonsStyling: false,
+          customClass: this.alertClasses(),
+        });
+      },
+      complete: () => this.isSubmitting.set(false),
+    });
   }
 
   protected toggleSidebar(): void {
@@ -199,6 +279,106 @@ export class RequestsPage {
 
   protected statusClass(status: RequestStatus): string {
     return `status-pill status-pill--${status.toLowerCase()}`;
+  }
+
+  private loadRequests(): void {
+    this.isLoading.set(true);
+    this.loadError.set('');
+    this.creditRequestsService.list().subscribe({
+      next: (requests) => {
+        const mapped = requests.map((request) => this.toViewModel(request));
+        this.requests.set(mapped);
+        if (!mapped.some((request) => request.id === this.selectedRequestId())) {
+          this.selectedRequestId.set(mapped[0]?.id ?? '');
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loadError.set(this.apiErrorMessage(error));
+        this.isLoading.set(false);
+      },
+      complete: () => {
+        this.isLoading.set(false);
+        this.isSubmitting.set(false);
+      },
+    });
+  }
+
+  private toViewModel(request: ApiCreditRequest): CreditRequest {
+    return {
+      id: request.requestNumber,
+      backendId: request.id,
+      date: new Date(request.createdAt).toLocaleDateString('es-PA', { day: '2-digit', month: 'short', year: 'numeric' }),
+      client: request.applicant.fullName,
+      nationalId: request.applicant.nationalId ?? '',
+      amount: this.formatCurrency(request.amount),
+      term: `${request.termMonths} meses`,
+      email: request.applicant.email,
+      phone: '—',
+      status: this.statusLabel(request.status),
+      initials: this.initials(request.applicant.fullName),
+    };
+  }
+
+  private statusLabel(status: 'PENDING' | 'APPROVED' | 'REJECTED'): RequestStatus {
+    return { PENDING: 'Pendiente', APPROVED: 'Aprobada', REJECTED: 'Rechazada' }[status] as RequestStatus;
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+  }
+
+  private initials(name: string): string {
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+  }
+
+  private apiErrorMessage(error: HttpErrorResponse | Error): string {
+    if (error instanceof Error && !(error instanceof HttpErrorResponse)) {
+      return error.message.startsWith('No encontramos')
+        ? error.message
+        : 'No pudimos completar la operación. Inténtalo nuevamente.';
+    }
+
+    const httpError = error as HttpErrorResponse;
+    if (httpError.status === 0) {
+      return 'No pudimos conectar con el servidor. Verifica tu conexión e inténtalo nuevamente.';
+    }
+    if (httpError.status === 401) {
+      return 'Tu sesión expiró. Inicia sesión nuevamente para continuar.';
+    }
+    if (httpError.status === 403) {
+      return 'No tienes permisos para realizar esta acción.';
+    }
+    if (httpError.status === 404) {
+      return 'No encontramos la solicitud. Actualiza la página e inténtalo nuevamente.';
+    }
+    if (httpError.status === 409) {
+      return 'Esta operación entra en conflicto con información existente.';
+    }
+    if (httpError.status === 400) {
+      return 'Revisa la información ingresada y corrige los campos indicados.';
+    }
+
+    return 'No pudimos completar la operación. Inténtalo nuevamente.';
+  }
+
+  private successTitle(mode: RequestDrawerMode): string {
+    return {
+      create: 'Solicitud creada',
+      edit: 'Solicitud actualizada',
+      approve: 'Solicitud aprobada',
+      reject: 'Solicitud rechazada',
+    }[mode];
+  }
+
+  private alertClasses() {
+    return {
+      popup: 'credi-alert',
+      icon: 'credi-alert__icon',
+      title: 'credi-alert__title',
+      htmlContainer: 'credi-alert__message',
+      actions: 'credi-alert__actions',
+      confirmButton: 'credi-alert__confirm',
+    };
   }
 
   protected logout(): void {

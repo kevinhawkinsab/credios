@@ -232,6 +232,17 @@
   padding: clamp(2rem, 4vw, 3.75rem) clamp(1.5rem, 4vw, 4rem);
 }
 
+.dashboard-loading,
+.dashboard-error {
+  margin: 0 0 1rem;
+  color: #66718a;
+  font-size: 0.85rem;
+}
+
+.dashboard-error {
+  color: #b84b58;
+}
+
 .health-banner {
   min-height: 15.9rem;
   display: flex;

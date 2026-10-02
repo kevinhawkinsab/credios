@@ -41,8 +41,12 @@
           <div><span>Plazo</span><strong>{{ termLabel() }}</strong></div>
         </div>
 
-        <button class="drawer-primary-button" type="submit">
-          <span>{{ mode() === 'create' ? 'Crear solicitud' : 'Guardar cambios' }}</span>
+        <button class="drawer-primary-button" type="submit" [disabled]="busy()" [attr.aria-busy]="busy()">
+          @if (busy()) {
+            <span class="drawer-loading"><span class="drawer-spinner" aria-hidden="true"></span>Cargando...</span>
+          } @else {
+            <span>{{ mode() === 'create' ? 'Crear solicitud' : 'Guardar cambios' }}</span>
+          }
           <span aria-hidden="true">→</span>
         </button>
       </form>
@@ -72,8 +76,11 @@
             }
           </div>
           <div class="decision-buttons">
-            <button class="decision-cancel" type="button" (click)="close()">Cancelar</button>
-            <button class="decision-confirm" [class.decision-confirm--reject]="isRejectMode()" type="submit">{{ isRejectMode() ? 'Confirmar rechazo' : 'Confirmar aprobación' }}</button>
+            <button class="decision-cancel" type="button" [disabled]="busy()" (click)="close()">Cancelar</button>
+            <button class="decision-confirm" [class.decision-confirm--reject]="isRejectMode()" [disabled]="busy()" [attr.aria-busy]="busy()" type="submit">
+              @if (busy()) { <span class="drawer-loading"><span class="drawer-spinner" aria-hidden="true"></span>Cargando...</span> }
+              @else { {{ isRejectMode() ? 'Confirmar rechazo' : 'Confirmar aprobación' }} }
+            </button>
           </div>
         </form>
       </div>
