@@ -130,7 +130,7 @@ npx prisma generate
 
 Se debe tener el Docker Desktop iniciado y validar que los puertos 3000 y 4200 estén disponibles.
 
-Desde la raíz del proyecto (/crediplus) se debe ejecutar:
+Desde la raíz del proyecto (/credios) se debe ejecutar:
 
 ```powershell
 docker compose up --build
