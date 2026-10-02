@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 import { USER_ROLE } from '../common/constants/user.constants.js';
@@ -8,6 +8,7 @@ import { CreateCreditRequestDto } from './dto/create-credit-request.dto.js';
 import { DecisionDto } from './dto/decision.dto.js';
 import { UpdateCreditRequestDto } from './dto/update-credit-request.dto.js';
 import { UpdateCreditRequestStatusDto } from './dto/update-credit-request-status.dto.js';
+import { ListCreditRequestsQueryDto } from './dto/list-credit-requests-query.dto.js';
 
 @Controller('credit-requests')
 export class CreditRequestsController {
@@ -19,8 +20,8 @@ export class CreditRequestsController {
   }
 
   @Get()
-  list(@CurrentUser() user: AuthenticatedUser) {
-    return this.creditRequestsService.list(user);
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListCreditRequestsQueryDto) {
+    return this.creditRequestsService.list(user, query.status);
   }
 
   @Get(':id')

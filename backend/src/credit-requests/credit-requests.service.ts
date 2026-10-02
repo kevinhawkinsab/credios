@@ -56,10 +56,12 @@ export class CreditRequestsService {
     return this.toResponse(request);
   }
 
-  async list(user: AuthenticatedUser) {
+  async list(user: AuthenticatedUser, status?: RequestStatus) {
     const where: Prisma.credit_requestsWhereInput = user.role === USER_ROLE.USER
-      ? { applicant_id: user.sub }
-      : {};
+      ? { applicant_id: user.sub, ...(status ? { status } : {}) }
+      : status
+        ? { status }
+        : {};
 
     const requests = await this.prisma.credit_requests.findMany({
       where,

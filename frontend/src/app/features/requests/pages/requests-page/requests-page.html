@@ -64,7 +64,7 @@
       }
       <section class="requests-hero" aria-labelledby="requests-title">
         <div class="requests-hero__copy">
-          <p> CREDIPLUS · GESTIÓN INTELIGENTE</p>
+          <p> CrediOS · GESTIÓN INTELIGENTE</p>
           <h1 id="requests-title">Encuentra el crédito<br /><strong>que mueve sus planes.</strong></h1>
           <span>Revisa cada solicitud con contexto y toma decisiones con confianza.</span>
         </div>
@@ -184,7 +184,7 @@
             </dl>
 
             <button class="edit-data-button" type="button" [disabled]="isSubmitting()" (click)="openDrawer('edit')">Editar datos</button>
-            @if (currentUser()?.role === 'ADMIN') {
+            @if (canDecideSelectedRequest()) {
               <div class="decision-actions">
                 <button type="button" [disabled]="isSubmitting()" (click)="openDrawer('approve')">Aprobar</button>
                 <button type="button" [disabled]="isSubmitting()" (click)="openDrawer('reject')">Rechazar</button>

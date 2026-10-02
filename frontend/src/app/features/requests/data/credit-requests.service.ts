@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   ApiCreditRequest,
+  ApiCreditRequestStatus,
   CreateCreditRequestPayload,
   DecisionPayload,
   UpdateCreditRequestPayload,
@@ -14,8 +15,9 @@ const API_URL = 'http://localhost:3000/api';
 export class CreditRequestsService {
   private readonly http = inject(HttpClient);
 
-  list(): Observable<readonly ApiCreditRequest[]> {
-    return this.http.get<readonly ApiCreditRequest[]>(`${API_URL}/credit-requests`);
+  list(status?: ApiCreditRequestStatus): Observable<readonly ApiCreditRequest[]> {
+    const params = status ? new HttpParams().set('status', status) : undefined;
+    return this.http.get<readonly ApiCreditRequest[]>(`${API_URL}/credit-requests`, { params });
   }
 
   findById(id: string): Observable<ApiCreditRequest> {
