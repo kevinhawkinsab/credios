@@ -72,7 +72,7 @@
         </nav>
 
         @if (isLogin()) {
-          <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+          <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submitToApi()" novalidate>
             <div class="field-group">
               <label for="login-email">Correo electrónico</label>
               <input
@@ -107,19 +107,17 @@
                 <span class="field-error" id="login-password-error">La contraseña debe tener al menos 6 caracteres.</span>
               }
             </div>
-
-            <label class="checkbox-field">
-              <input type="checkbox" formControlName="rememberDevice" />
-              <span>Recordar este dispositivo</span>
-            </label>
-
-            <button class="submit-button" type="submit">
-              <span>Entrar</span>
+            <button class="submit-button" type="submit" [disabled]="isSubmitting()" [attr.aria-busy]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="submit-loading"><span class="loading-spinner" aria-hidden="true"></span>Cargando...</span>
+              } @else {
+                <span>Entrar</span>
+              }
               <span aria-hidden="true">→</span>
             </button>
           </form>
         } @else {
-          <form class="auth-form auth-form--register" [formGroup]="registerForm" (ngSubmit)="submit()" novalidate>
+          <form class="auth-form auth-form--register" [formGroup]="registerForm" (ngSubmit)="submitToApi()" novalidate>
             <div class="field-grid">
               <div class="field-group">
                 <label for="register-name">Nombre completo</label>
@@ -167,8 +165,12 @@
               <span>Acepto los términos de uso y la política de privacidad.</span>
             </label>
 
-            <button class="submit-button" type="submit">
-              <span>Crear cuenta</span>
+            <button class="submit-button" type="submit" [disabled]="isSubmitting()" [attr.aria-busy]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="submit-loading"><span class="loading-spinner" aria-hidden="true"></span>Creando cuenta...</span>
+              } @else {
+                <span>Crear cuenta</span>
+              }
               <span aria-hidden="true">→</span>
             </button>
           </form>

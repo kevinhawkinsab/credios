@@ -2,9 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { RequestDrawer, RequestDrawerCompletedEvent } from '../../components/request-drawer/request-drawer';
 import { CreditRequest, RequestStatus } from '../../models/credit-request';
 
@@ -117,6 +120,8 @@ const INITIAL_REQUESTS: readonly CreditRequest[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RequestsPage {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly sidebarOpen = signal(false);
   protected readonly searchTerm = signal('');
   protected readonly selectedFilter = signal<RequestFilter>('Todos');
@@ -194,6 +199,11 @@ export class RequestsPage {
 
   protected statusClass(status: RequestStatus): string {
     return `status-pill status-pill--${status.toLowerCase()}`;
+  }
+
+  protected logout(): void {
+    this.authService.logout().subscribe();
+    void this.router.navigate(['/login']);
   }
 }
 

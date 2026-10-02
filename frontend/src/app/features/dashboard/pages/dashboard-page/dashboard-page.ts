@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 type RequestStatus = 'Pendiente' | 'Aprobada' | 'Rechazada';
 
@@ -33,6 +35,8 @@ interface ChartBar {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardPage {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly sidebarOpen = signal(false);
   protected readonly selectedPeriod = signal('Septiembre');
 
@@ -111,6 +115,11 @@ export class DashboardPage {
 
   protected toggleSidebar(): void {
     this.sidebarOpen.update((isOpen) => !isOpen);
+  }
+
+  protected logout(): void {
+    this.authService.logout().subscribe();
+    void this.router.navigate(['/login']);
   }
 
   protected closeSidebar(): void {

@@ -398,6 +398,34 @@
   transform: translateY(-1px);
 }
 
+.submit-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+  box-shadow: none;
+}
+
+.submit-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(25, 59, 91, 0.28);
+  border-top-color: #193b5b;
+  border-radius: 50%;
+  animation: auth-loading-spin 700ms linear infinite;
+}
+
+@keyframes auth-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .submit-button span:last-child {
   font-size: 1.35rem;
   font-weight: 400;
